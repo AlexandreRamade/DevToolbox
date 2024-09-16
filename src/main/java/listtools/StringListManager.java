@@ -1,9 +1,6 @@
 package listtools;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -66,6 +63,10 @@ public class StringListManager {
 
     /** ***** ***** METHODES DE TRAITEMENT ***** ***** */
 
+    public List<String> getListe() {
+        return this.liste.collect(Collectors.toList());
+    }
+
     public StringListManager ajouterGuillemets() {
         liste = liste.map(str -> String.format("\"%s\"", str));
         return this;
@@ -107,20 +108,20 @@ public class StringListManager {
     }
 
     /**
-     * extraireVariable<br>
+     * extraireUneSeuleVariableParLigne<br>
      * <p>
-     * extrait une valeur variable au sein d'un motif constant<br>
+     * extrait valeur variable au sein d'un motif constant une seule fois par ligne (la première occurence)<br>
      * Exemple d'utilisation :<br>
      * liste = action: imprimer, action: sauvegarder, action: restaurer<br>
      * extraireVariable("action: (.*)") => imprimer, sauvegarder, restaurer
      * </p>
-     * <u>utiliser le motif (.*) ou (.*?) pour identifier la partie variable à
+     * <u>utiliser le motif (.*) (ou (.*?) en mode Non-Greedy) pour identifier la partie variable à
      * extraire</u>
      *
      * @param motifAvecVaribleAExtraire
      * @return l'instance de TraiterListeStrings
      */
-    public StringListManager extraireVariable(String motifAvecVaribleAExtraire) {
+    public StringListManager extraireVariableUneSeuleFoisParLigne(String motifAvecVaribleAExtraire) {
         String motif = String.format(".*%s.*", motifAvecVaribleAExtraire);
         Pattern pattern = Pattern.compile(motifAvecVaribleAExtraire);
         liste = liste.filter(str -> str.matches(motif)).map(str -> {
@@ -129,6 +130,34 @@ public class StringListManager {
                 return matcher.group(1);
             }
             return null;
+        });
+        return this;
+    }
+
+    /**
+     * extraireVariablePlusieursFoirParLigne<br>
+     * <p>
+     * extrait une valeur variable au sein d'un motif constant autant de fois que le motif apparait dans la ligne (plusieurs occurences par lignes)<br>
+     * Exemple d'utilisation :<br>
+     * liste = action: imprimer, action: sauvegarder, action: restaurer<br>
+     * extraireVariable("action: (.*)") => imprimer, sauvegarder, restaurer
+     * </p>
+     * <u>utiliser le motif (.*) (ou (.*?) en mode Non-Greedy) pour identifier la partie variable à
+     * extraire</u>
+     *
+     * @param motifAvecVaribleAExtraire
+     * @return l'instance de TraiterListeStrings
+     */
+    public StringListManager extraireVariablePlusieursFoisParLigne(String motifAvecVaribleAExtraire) {
+        String motif = String.format(".*%s.*", motifAvecVaribleAExtraire);
+        Pattern pattern = Pattern.compile(motifAvecVaribleAExtraire);
+        liste = liste.filter(str -> str.matches(motif)).flatMap(str -> {
+            List<String> matchs = new ArrayList<>();
+            Matcher matcher = pattern.matcher(str);
+            while (matcher.find()) {
+                matchs.add(matcher.group(1));
+            }
+            return matchs.stream();
         });
         return this;
     }
