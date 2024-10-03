@@ -103,10 +103,11 @@ public class StringListComparator {
         return this.specificToListB;
     }
 
-    public void compareContent() {
+    public StringListComparator compareContent() {
         this.findCommonItems();
         this.findSpecificItemsInReferenceList();
         this.findSpecificItemsInListB();
+        return this;
     }
 
 
@@ -122,7 +123,11 @@ public class StringListComparator {
 
     private void displayResultInConsole(String comment, List<String> list, boolean showLineNumbers) {
         System.err.println(comment + list.size());
-        List<String> listToDispay = showLineNumbers ? addLineNumber(list, "- ") : list;
+        List<String> listToDispay = list;
+        if(showLineNumbers) {
+        	Increment increment = new Increment("0", true, true);
+        	listToDispay = increment.addIncrementedSequenceToListItems(list, "- ", Increment.BEFORE);
+        }
         System.out.println(listToDispay.stream().collect(Collectors.joining(SEPARATOR)));
     }
 
@@ -141,16 +146,6 @@ public class StringListComparator {
         set.clear();
         System.out.println(String.format("Elements en doublons dans la liste B : \n%s",
                 listB.stream().filter(str -> !set.add(str)).collect(Collectors.joining(", "))));
-    }
-
-
-
-
-    /** ***** ***** METHODES UTILITAIRES ***** ***** */
-
-    private static List<String> addLineNumber(List<String> list, String separator) {
-        Increment increment = new Increment("0", true, true);
-        return list.stream().map(str -> increment.increment() + separator + str).collect(Collectors.toList());
     }
 
 }
