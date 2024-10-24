@@ -1,6 +1,7 @@
 package listtools;
 
 import java.util.*;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -23,16 +24,8 @@ public class StringListManager {
 
     private Stream<String> liste;
 
-    private static final String SEPARATEUR = "\n";
-
-    private String LISTE_REF = "";
-
 
     /** ***** ***** CONSTRUCTEURS ***** ***** */
-
-    public StringListManager() {
-        extraireListe();
-    }
 
     public StringListManager(List<String> listeStrings) {
         liste = listeStrings.stream();
@@ -46,10 +39,7 @@ public class StringListManager {
         liste = Arrays.asList(stringADecouper.split(separateur)).stream();
     }
 
-    private void extraireListe() {
-        liste = Arrays.asList(LISTE_REF.split(SEPARATEUR)).stream();
-    }
-
+    
     /** ***** ***** METHODES UTILITAIRES ***** ***** */
 
     private static String extraireValeur(Pattern pattern, String source) {
@@ -240,7 +230,7 @@ public class StringListManager {
      * concatène plusieurs éléments consécutifs de la liste en les séparant avec le
      * séparateur passé en paramètre <br>
      * Exemple d'utilisation : <br>
-     * liste = A, B, C, D, E, F, G, I, J, K <br>
+     * liste = A, B, C, D, E, F, G, H, I, J, K <br>
      * grouperElementsConsecutifs(3, "-") => A-B-C, D-E-F, G-H-I, J-K
      * </p>
      *
@@ -254,6 +244,42 @@ public class StringListManager {
                 .stream().map(value -> String.join(separateur, value));
         return this;
     }
+    
+    /**
+     * grouperElementsConsecutifsSi <br>
+     * <p>
+     * concatène plusieurs éléments consécutifs de la liste en les séparant avec le
+     * séparateur passé en paramètre uniquement si la ligne courante ou la ligne suivante
+     * valide la condition définie par le prédicat passé en paramètre <br>
+     * Exemple d'utilisation : <br>
+     * liste = A, b, C, D, e, f, g, H, I, J, k <br>
+     * grouperElementsConsecutifs(isLowerCase, "-") => A-b-C, D-e-f-g-H, I, J-k
+     * </p>
+     *
+     * @param predicate conditions à valider sur la ligne courante et/ou la ligne précédente
+     * @param separateur
+     * @return l'instance de TraiterListeStrings
+     */
+    public StringListManager grouperElementsConsecutifsSi(BiPredicate<String, String> predicate, String separateur) {
+    	List<String> source = liste.collect(Collectors.toList());
+    	List<String> result = new LinkedList<>();
+    	
+    	result.add(source.get(0));
+    	for(int i = 0; i < source.size() -1; i++) {
+    		String current = result.get(result.size() - 1);
+    		String next = source.get(i + 1);
+    		if(predicate.test(current, next)) {
+    			result.remove(result.size() - 1);
+    			result.add(current.concat(separateur).concat(next));
+    		} else {
+    			result.add(next);
+    		}
+    	}
+    	
+    	liste = result.stream();
+    	return this;
+    }
+    
 
     public StringListManager appliquerStringFormatPattern(String stringFormatPattern) {
         int occurrence = 0;
