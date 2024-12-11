@@ -346,6 +346,44 @@ public class MixerListManager {
 			}
 		}
 	}
+	
+	/**
+	 * mergeListsItemsApplyingStringFormatPattern </br>
+	 * <p>
+	 * remplace les valeurs 1 et 2 d'un StringFormatPattern par les éléments respectifs de chaque liste
+	 * </p>
+	 * <p>
+	 * Exemple d'utilisation : <br>
+	 * listA = A1, A2, A3, A4 <br>
+	 * listB = B1, B2
+	 * mergeListsItemsApplyingStringFormatPattern("%s correspond à %s dans la deuxieme liste") => </br>
+	 * A1 correspond à B1 dans la deuxieme liste
+	 * A2 correspond à B2 dans la deuxieme liste
+	 * A3 correspond à ? dans la deuxieme liste
+	 * A4 correspond à ? dans la deuxieme liste
+	 * </p>
+	 * 
+	 * @param stringFormatPattern patterne devant contenir exactement 2 symbole %s à remplacer
+	 */
+	public void mergeListsItemsApplyingStringFormatPattern(String stringFormatPattern) {
+		int index = 0;
+		for (; index < listA.size() && index < listB.size(); index++) {
+			this.mixedList.add(String.format(stringFormatPattern, listA.get(index), listB.get(index)));
+		}
+
+		// complète avec les éventuels éléments restants de l'une des 2 listes
+		if (completeMixedListWithExessItems) {
+			while (index < listA.size()) {
+				this.mixedList.add(String.format(stringFormatPattern, listA.get(index), "?"));
+				index++;
+			}
+
+			while (index < listB.size()) {
+				this.mixedList.add(String.format(stringFormatPattern, "?", listB.get(index)));
+				index++;
+			}
+		}
+	}
 
 	/**
 	 * alternateOrReplaceGroupItemsEvery </br>
@@ -355,7 +393,7 @@ public class MixerListManager {
 	 * </p>
 	 * <p>
 	 * Exemples d'utilisation :</br>
-	 * listA = A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14 listB =
+	 * listA = A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14 </br>listB =
 	 * B1, B2, B3, B4, B5, B6, B7, B8, B9 -> alterner
 	 * alternateOrReplaceGroupItemsEvery(2, 3, false, false) => A1, A2, B1, B2, B3,
 	 * A3, A4, B4, B5, B6, A5, A6, B7, B8, B9, A7, A8, A9, A10, A11, A12, A13, A14
