@@ -40,22 +40,18 @@ public class StringListManager {
     }
 
     
-    /** ***** ***** METHODES UTILITAIRES ***** ***** */
+    /** ***** ***** METHODES GET ***** ***** */
 
-    private static String extraireValeur(Pattern pattern, String source) {
-        Matcher matcher = pattern.matcher(source);
-        if (matcher.find()) {
-            return matcher.group();
-        }
-        return "";
+    public List<String> getListe() {
+    	return this.liste.collect(Collectors.toList());
+    }
+    
+    public <T> List<T> castAndGetListe(Function<String, T> function) {
+    	return this.liste.map(function::apply).collect(Collectors.toList());
     }
 
 
     /** ***** ***** METHODES DE TRAITEMENT ***** ***** */
-
-    public List<String> getListe() {
-        return this.liste.collect(Collectors.toList());
-    }
 
     public StringListManager ajouterGuillemets() {
         liste = liste.map(str -> String.format("\"%s\"", str));
