@@ -2,7 +2,7 @@ package cardgames.comparators;
 
 import java.util.Comparator;
 
-import cardgames.Card;
+import cardgames.model.Card;
 
 public class PointsComparator implements Comparator<Card> {
 

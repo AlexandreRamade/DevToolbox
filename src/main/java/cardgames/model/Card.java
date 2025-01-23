@@ -1,4 +1,4 @@
-package cardgames;
+package cardgames.model;
 
 import cardgames.enums.Figure;
 import cardgames.enums.Forme;
@@ -26,7 +26,7 @@ public class Card implements Comparable<Card> {
 
 	@Override
 	public int compareTo(Card o) {
-		return this.figure.compareTo(o.figure);
+		return o.figure.compareTo(this.figure);
 	}
 	
 	public String getSymbol_fr() {
