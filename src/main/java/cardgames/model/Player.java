@@ -14,7 +14,6 @@ public class Player {
 	private int points = 0;
 	
 	
-	
 	public Player(int id, String name, List<Card> main) {
 		this.id = id;
 		this.name = name;
@@ -32,6 +31,14 @@ public class Player {
 	public List<Card> addAllToPoche(List<Card> cards) {
 		this.poche.addAll(cards);
 		return this.poche;
+	}
+	
+	public void clearMain() {
+		this.main.clear();
+	}
+	
+	public void clearPoche() {
+		this.poche.clear();
 	}
 	
 	public Card removeTable() {

@@ -14,7 +14,6 @@ public class Card implements Comparable<Card> {
 	private int force;
 	
 	
-	
 	public Card(Forme forme, Figure figure) {
 		this.forme = forme;
 		this.figure = figure;
@@ -32,7 +31,6 @@ public class Card implements Comparable<Card> {
 	public String getSymbol_fr() {
 		return this.forme.getSymbole().concat(this.figure.getSymbole_fr());
 	}
-	
 	
 
 	@Override

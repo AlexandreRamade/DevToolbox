@@ -2,6 +2,7 @@ package cardgames;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,11 +78,11 @@ public class CardGame {
 		return this;
 	}
 	
-	public CardGame play(Function<List<Card>, Card> strategy) {
+	public CardGame play(Function<List<Card>, Card> playStrategy, Comparator<Card> winnerComparator) {
 		while(players.stream().allMatch(Player::haveCardInMain)) {
-			players.stream().forEach(p -> p.play(strategy));
+			players.stream().forEach(p -> p.play(playStrategy));
 			displayTable();
-			Player gagnant = players.stream().max((p1, p2) -> p1.getTable().get().compareTo(p2.getTable().get())).get();
+			Player gagnant = players.stream().max((p1, p2) -> winnerComparator.compare(p1.getTable().get(), p2.getTable().get())).get();
 			System.out.println("Gagnant = " + gagnant.getName());
 			gagnant.addAllToPoche(players.stream().map(Player::removeTable).collect(Collectors.toList()));
 		}
