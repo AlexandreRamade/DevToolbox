@@ -22,15 +22,34 @@ public class Player {
 	}
 
 	
-	public Card play(Function<List<Card>, Card> function) {
-		this.table = Optional.of(function.apply(main));
-		this.main.remove(this.table.get());
+	public Card play(Function<List<Card>, Card> playStrategy) {
+		this.table = Optional.of(getCard(playStrategy));
 		return this.table.get();
+	}
+	
+	public Card getFirstCard() {
+		Card card = this.main.get(0);
+		this.main.remove(0);
+		return card;
+	}
+	
+	public Card getCard(Function<List<Card>, Card> playStrategy) {
+		Card card = playStrategy.apply(main);
+		this.main.remove(card);
+		return card;
+	}
+	
+	public void addCardToMain(Card card) {
+		this.main.add(card);
 	}
 	
 	public List<Card> addAllToPoche(List<Card> cards) {
 		this.poche.addAll(cards);
 		return this.poche;
+	}
+	
+	public Card getLastCardInPoche() {
+		return this.poche.get(this.poche.size() - 1);
 	}
 	
 	public void clearMain() {
@@ -55,11 +74,7 @@ public class Player {
 		this.points += this.countPochePoints();
 		return this.points;
 	}
-	
-	public void addCardToMain(Card card) {
-		this.main.add(card);
-	}
-	
+		
 	public boolean haveCardInMain() {
 		return !this.main.isEmpty();
 	}

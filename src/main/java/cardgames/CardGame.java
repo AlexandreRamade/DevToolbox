@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,6 +23,8 @@ public class CardGame {
 	private Map<Integer, List<Card>> cardsPlayers;
 	
 	private List<Player> players;
+	
+	private Player pioche;
 	
 		
 	public CardGame(List<Card> cards) {
@@ -51,20 +54,36 @@ public class CardGame {
 		return this;
 	}
 	
+	public CardGame distributeCardsToPlayers(List<String> playerNames) {
+		distributeCardsToPlayersAndDrawPile(playerNames, 0);
+		return this;
+	}
+	
+	public CardGame distributeCardsToPlayersAndDrawPile(List<String> playerNames, int ndDeCarteDeLaPioche) {
+		distributeCards(playerNames.size(), ndDeCarteDeLaPioche);
+		attributeCardsToPlayers(playerNames);
+		return this;
+	}
+	
+	public CardGame distributeCardsToPlayersAndLeavingADrawPile(List<String> playerNames, int ndDeCarteParJoueur) {
+		int ndDeCarteDeLaPioche = this.cards.size() - (playerNames.size() * ndDeCarteParJoueur);
+		distributeCardsToPlayersAndDrawPile(playerNames, ndDeCarteDeLaPioche);
+		return this;
+	}
+	
 	private int iterator = 0;
-	
-	private void distributeCards(int nbDeJoueurs) {
+		
+	private void distributeCards(int nbDeJoueurs, int ndDeCarteDeLaPioche) {
 		this.iterator = 0;
-		this.cardsPlayers = this.cards.stream().collect(Collectors.groupingBy(c -> iterator++ % nbDeJoueurs));
+		if(ndDeCarteDeLaPioche > 0) {
+			this.pioche = new Player(-1, "Pioche", this.cards.subList(0, ndDeCarteDeLaPioche));
+			this.cardsPlayers = this.cards.subList(ndDeCarteDeLaPioche, cards.size()).stream().collect(Collectors.groupingBy(c -> iterator++ % nbDeJoueurs));
+		} else {
+			this.cardsPlayers = this.cards.stream().collect(Collectors.groupingBy(c -> iterator++ % nbDeJoueurs));
+		}
 	}
 	
-	private void distributeCardsLeavingADrawPile(int nbDeJoueurs, int ndDeCarteDeLaPioche) {
-		this.iterator = 0;
-		this.cardsPlayers = this.cards.subList(ndDeCarteDeLaPioche, cards.size()).stream().collect(Collectors.groupingBy(c -> iterator++ % nbDeJoueurs));
-		this.cardsPlayers.put(-1, this.cards.subList(0, ndDeCarteDeLaPioche));
-	}
-	
-	private void attribuerCardsToPlayers(List<String> playerNames) {
+	private void attributeCardsToPlayers(List<String> playerNames) {
 		if(!this.cardsPlayers.isEmpty() && !playerNames.isEmpty()) {
 			for(int i = 0; i < playerNames.size(); i++) {
 				this.players.add(new Player(i, playerNames.get(i), this.cardsPlayers.get(i)));
@@ -72,22 +91,35 @@ public class CardGame {
 		}
 	}
 	
-	public CardGame distributeCardsToPlayers(List<String> playerNames) {
-		distributeCards(playerNames.size());
-		attribuerCardsToPlayers(playerNames);
+	
+	public CardGame play(Function<List<Card>, Card> playStrategy, Comparator<Card> winnerComparator) {
+		this.play(playStrategy, winnerComparator, null);
 		return this;
 	}
 	
-	public CardGame play(Function<List<Card>, Card> playStrategy, Comparator<Card> winnerComparator) {
+	public CardGame playWithDrawPile(Function<List<Card>, Card> playStrategy, Comparator<Card> winnerComparator, Predicate<Player> drawInTheDrawPileStrategy) {
+		this.play(playStrategy, winnerComparator, drawInTheDrawPileStrategy);
+		return this;
+	}
+	
+	private void play(Function<List<Card>, Card> playStrategy, Comparator<Card> winnerComparator, Predicate<Player> drawInTheDrawPileStrategy) {
 		while(players.stream().allMatch(Player::haveCardInMain)) {
 			players.stream().forEach(p -> p.play(playStrategy));
 			displayTable();
 			Player gagnant = players.stream().max((p1, p2) -> winnerComparator.compare(p1.getTable().get(), p2.getTable().get())).get();
 			System.out.println("Gagnant = " + gagnant.getName());
 			gagnant.addAllToPoche(players.stream().map(Player::removeTable).collect(Collectors.toList()));
+			
+			// play with Draw Pile
+			if(drawInTheDrawPileStrategy != null) {
+				players.stream().filter(drawInTheDrawPileStrategy::test).forEach(p -> {
+					if(this.pioche.haveCardInMain()) {
+						p.addCardToMain(this.pioche.getFirstCard());
+					}
+				});
+			}
 		}
 		players.stream().forEach(Player::countPochePointsAndAddToPlayerPoints);
-		return this;
 	}
 
 	public List<Card> getCards() {
@@ -110,6 +142,9 @@ public class CardGame {
 	
 	public void displayPlayers() {
 		this.players.stream().forEach(System.out::println);
+		if(this.pioche != null) {
+			System.out.println(this.pioche);
+		}
 	}
 	
 
