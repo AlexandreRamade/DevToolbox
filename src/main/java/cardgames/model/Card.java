@@ -18,6 +18,13 @@ public class Card implements Comparable<Card> {
 		this.forme = forme;
 		this.figure = figure;
 	}
+	
+	public Card(Forme forme, Figure figure, int points, int force) {
+		this.forme = forme;
+		this.figure = figure;
+		this.points = points;
+		this.force = force;
+	}
 
 	public boolean isFigure() {
 		return this.figure.isRealFigure();
@@ -54,6 +61,17 @@ public class Card implements Comparable<Card> {
 		return force;
 	}
 
-	
+	public void setPoints(int points) {
+		this.points = points;
+	}
+
+	public void setForce(int force) {
+		this.force = force;
+	}
+
+	public void setPointsAndForce(int value) {
+		this.points = value;
+		this.force = value;
+	}
 	
 }

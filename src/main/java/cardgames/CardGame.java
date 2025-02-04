@@ -1,6 +1,5 @@
 package cardgames;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -9,10 +8,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import cardgames.enums.Figure;
-import cardgames.enums.Forme;
 import cardgames.model.Card;
 import cardgames.model.Player;
 
@@ -32,22 +28,6 @@ public class CardGame {
 		this.players = new LinkedList<>();
 	}
 
-	public static CardGame generateGameOf52Cards() {
-		return new CardGame(generateCardsGame(Arrays.asList(Forme.values()), Arrays.asList(Figure.values())));
-	}
-	
-	public static CardGame generateGameOf32Cards() {
-		return new CardGame(generateCardsGame(Arrays.asList(Forme.values()), Arrays.asList(Figure.values()))
-				.stream().sorted().limit(32).collect(Collectors.toList()));
-	}
-	
-	public static List<Card> generateCardsGame(List<Forme> formes, List<Figure> figures) {
-		return formes.stream().flatMap(forme -> generateCardsByForme(forme, figures)).collect(Collectors.toList());
-	}
-	
-	private static Stream<Card> generateCardsByForme(Forme forme, List<Figure> figures) {
-		return figures.stream().map(figure -> new Card(forme, figure));
-	}
 	
 	public CardGame shuffleCards() {
 		Collections.shuffle(this.cards);
