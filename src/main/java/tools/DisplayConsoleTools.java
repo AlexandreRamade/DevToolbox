@@ -2,6 +2,7 @@ package tools;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -19,14 +20,21 @@ public class DisplayConsoleTools {
 	private static final String TAB = "\t";
 	
 	
-	public void displayList(Collection<?> c) {
+	public static void displayList(Collection<?> c) {
         c.forEach(System.out::println);
     }
 
-    public void displayListInLine(Collection<?> c, String separateur) {
+    public static void displayListInLine(Collection<?> c, String separateur) {
         System.out.println(c.stream().map(String::valueOf).collect(Collectors.joining(separateur)));
     }
     
+    public static <K, V> void displayMapOfList(Map<K, List<V>> map) {
+    	System.out.println("Key => (size) : [list content]");
+    	for(K key : map.keySet()) {
+    		List<V> liste = map.get(key);
+    		System.out.println(key.toString() + "\t => (" + liste.size() + ")\t : " + liste.toString());
+    	}
+    }
 
 	public static <T> void displayHistogram(Map<T, Long> map, Integer displayTag, String unitSymbol) {
 		int displayTagToUse = displayTag == null ? 0 : displayTag;

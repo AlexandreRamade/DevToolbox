@@ -322,6 +322,11 @@ public class StringListManager {
         }
         return occurence;
     }
+    
+    public StringListManager decouperChaqueElement(String separator) {
+    	this.liste = this.liste.flatMap(str -> Arrays.asList(str.split(separator)).stream());
+    	return this;
+    }
 
     /** ***** ***** AFFICHAGE DU RESULTAT ***** ***** */
 
