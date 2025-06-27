@@ -41,6 +41,10 @@ public class StringListManager {
 
     
     /** ***** ***** METHODES GET ***** ***** */
+    
+    public Optional<String> getFirstValue() {
+    	return this.liste.findAny();
+    }
 
     public List<String> getListe() {
     	return this.liste.collect(Collectors.toList());
