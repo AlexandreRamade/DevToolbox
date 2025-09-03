@@ -1,17 +1,14 @@
-package mediaordering;
+package filesmanager.mediaordering;
 
 import filesmanager.FilesAndFoldersManager;
-import stringtools.Increment;
-import tools.DisplayConsoleTools;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MediaOrdering {
+public class MediasOrdering {
 
     public static List<Media> findMedias(String path, MediaType mediaType) {
         FilesAndFoldersManager manager = new FilesAndFoldersManager(path);

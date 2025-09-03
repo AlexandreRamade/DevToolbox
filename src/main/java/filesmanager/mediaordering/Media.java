@@ -1,4 +1,4 @@
-package mediaordering;
+package filesmanager.mediaordering;
 
 
 public class Media implements Comparable<Media> {
