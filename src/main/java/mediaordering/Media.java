@@ -3,6 +3,7 @@ package mediaordering;
 
 public class Media implements Comparable<Media> {
     private final String ORDERED_TITLE_REGEX = "^[0-9]+-[a-zA-Z0-9]+.*";
+    private final int UNORDERED_INDEX = -1;
 
     private int order;
     private String title;
@@ -21,7 +22,7 @@ public class Media implements Comparable<Media> {
             this.order = Integer.parseInt(mediaFileTitle.substring(0, mediaFileTitle.indexOf("-")));
             this.title = mediaFileTitle.substring(mediaFileTitle.indexOf("-") + 1);
         } else {
-            this.order = -1;
+            this.order = UNORDERED_INDEX;
             this.title = mediaFileTitle;
         }
         this.fileTitle = mediaFileTitle;
@@ -29,11 +30,15 @@ public class Media implements Comparable<Media> {
     }
 
     public boolean isOrdered() {
-        return this.order > -1;
+        return this.order > UNORDERED_INDEX;
+    }
+
+    public void removeOrder() {
+        this.order = UNORDERED_INDEX;
     }
 
     public String getOrderedTitle() {
-        if(this.order > -1) {
+        if(isOrdered()) {
             return this.order + "-" + this.title;
         }
         return this.title;
@@ -54,8 +59,10 @@ public class Media implements Comparable<Media> {
     @Override
     public String toString() {
         return "Media{" +
-                "order=" + order +
+                "ORDERED_TITLE_REGEX='" + ORDERED_TITLE_REGEX + '\'' +
+                ", order=" + order +
                 ", title='" + title + '\'' +
+                ", fileTitle='" + fileTitle + '\'' +
                 ", content='" + content + '\'' +
                 '}';
     }
@@ -64,9 +71,7 @@ public class Media implements Comparable<Media> {
         return order;
     }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
 
     public String getFileTitle() {
         return fileTitle;
@@ -79,18 +84,5 @@ public class Media implements Comparable<Media> {
     public void setOrder(int order) {
         this.order = order;
     }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setFileTitle(String fileTitle) {
-        this.fileTitle = fileTitle;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
 
 }

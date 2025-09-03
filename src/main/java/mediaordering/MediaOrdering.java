@@ -1,6 +1,7 @@
 package mediaordering;
 
 import filesmanager.FilesAndFoldersManager;
+import stringtools.Increment;
 import tools.DisplayConsoleTools;
 
 import java.util.ArrayList;
@@ -12,20 +13,29 @@ import java.util.stream.Collectors;
 
 public class MediaOrdering {
 
-    List<Media> medias;
-
-    public void findMedias(String path, MediaType mediaType) {
+    public static List<Media> findMedias(String path, MediaType mediaType) {
         FilesAndFoldersManager manager = new FilesAndFoldersManager(path);
         List<String> files = manager.getContentList("", FilesAndFoldersManager.Type.FILE, true);
 
-        this.medias = files.stream()
+        return files.stream()
                 .filter(mediaType::isCompatibleType)
                 .map(Media::new)
                 .sorted()
                 .collect(Collectors.toList());
     }
 
-    public void orderMedias(String path, List<Media> medias) {
+    public static void orderMedias(int firstIndex, List<Media> medias) {
+        for(Media media : medias) {
+            media.setOrder(firstIndex++);
+        }
+    }
+
+    public static void removeOrder(List<Media> medias) {
+        medias.forEach(Media::removeOrder);
+        Collections.sort(medias);
+    }
+
+    public static void applyOrderToFiles(String path, List<Media> medias) {
         verifyOrderUnicity(medias);
 
         FilesAndFoldersManager manager = new FilesAndFoldersManager(path);
@@ -36,7 +46,7 @@ public class MediaOrdering {
                 });
     }
 
-    private void verifyOrderUnicity(List<Media> medias) {
+    private static void verifyOrderUnicity(List<Media> medias) {
         Set<Integer> orders = new HashSet<>();
         List<Media> duplicates = medias.stream().filter(Media::isOrdered).filter(media -> !orders.add(media.getOrder())).collect(Collectors.toList());
         if(!duplicates.isEmpty()) {
@@ -44,11 +54,4 @@ public class MediaOrdering {
         }
     }
 
-    public void displayMedias() {
-        DisplayConsoleTools.displayList(this.medias);
-    }
-
-    public List<Media> getMedias() {
-        return medias;
-    }
 }
