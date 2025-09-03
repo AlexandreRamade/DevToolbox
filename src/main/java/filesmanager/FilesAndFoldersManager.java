@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 public class FilesAndFoldersManager {
 
     /** Adresse du dossier principal */
-    private static String MAIN_FOLDER_PATH = "C:\\Users\\a-ramade\\Desktop\\TEST";
+    private static String MAIN_FOLDER_PATH = "C:\\";
 
     public void setMainFolderPath(String mainFolderPath) {
         MAIN_FOLDER_PATH = mainFolderPath;
@@ -58,12 +58,6 @@ public class FilesAndFoldersManager {
     }
 
     /* ***** ***** ***** ***** CONSTRUCTEURS ***** ***** ***** ***** */
-    /**
-     * Constructeur par défaut
-     */
-    public FilesAndFoldersManager() {
-        super();
-    }
 
     /**
      * Constructeur avec adresse du dossier principal
@@ -94,7 +88,7 @@ public class FilesAndFoldersManager {
      * fichier permettant de créer le Path complet de l'élément
      * </p>
      */
-    private static BiFunction<String, String, Path> getAbsolutePath = (folderOrFileName, relativePath) -> {
+    private static BiFunction<String, String, Path> getAbsolutePath = (relativePath, folderOrFileName) -> {
         StringBuilder absolutePath = new StringBuilder(MAIN_FOLDER_PATH);
         if (!isEmptyOrBlank.test(relativePath)) {
             absolutePath.append("\\").append(relativePath);
@@ -111,19 +105,23 @@ public class FilesAndFoldersManager {
      * Retourne l'extention d'un fichier à partir de son nom
      * </p>
      */
-    private static Function<String, String> getExtension = (pathOrFileName) -> pathOrFileName
-            .substring(pathOrFileName.lastIndexOf("."));
+    private static Function<String, String> getExtension = (fileName) -> fileName
+            .substring(fileName.lastIndexOf("."));
 
     /**
-     * relativePathExists<br>
+     * pathExists<br>
      * <p>
-     * Teste la validité d'une adresse relative
+     * Teste la validité d'une adresse et le type attendu
      * </p>
      */
-    public static BiPredicate<String, Type> relativePathExists = (relativePath, type) -> {
-        Path completePath = getAbsolutePath.apply(null, relativePath);
-        return Files.exists(completePath)
-                && (type == Type.FOLDER ? Files.isDirectory(completePath) : Files.isRegularFile(completePath));
+    public static void testPathAndType(String relativePath, Type type) throws IOException {
+        Path completePath = getAbsolutePath.apply(relativePath, null);
+        if(!Files.exists(completePath)) {
+            throw new IOException(String.format("The path '%s' doesn't exist.", completePath));
+        }
+        if((type == Type.FOLDER && !Files.isDirectory(completePath)) || (type == Type.FILE && !Files.isRegularFile(completePath))) {
+            throw new IOException(String.format("The path '%s' isn't the expected type.", completePath));
+        }
     };
 
     /* ***** ***** ***** ***** METHODES ***** ***** ***** ***** */
@@ -149,9 +147,9 @@ public class FilesAndFoldersManager {
      */
     public FilesAndFoldersManager createFolder(String folderName, String relativePath) {
         try {
-            testRelativesPaths(relativePath, null);
+            testPathAndType(relativePath, Type.FOLDER);
 
-            Path newFolderPath = getAbsolutePath.apply(folderName, relativePath);
+            Path newFolderPath = getAbsolutePath.apply(relativePath, folderName);
             if (Files.notExists(newFolderPath)) {
                 Files.createDirectory(newFolderPath);
             }
@@ -161,11 +159,11 @@ public class FilesAndFoldersManager {
         return this;
     }
 
-    public FilesAndFoldersManager createFile(String folderName, String relativePath) {
+    public FilesAndFoldersManager createFile(String fileName, String relativePath) {
         try {
-            testRelativesPaths(relativePath, null);
+            testPathAndType(relativePath, Type.FOLDER);
 
-            Path newFilePath = getAbsolutePath.apply(folderName, relativePath);
+            Path newFilePath = getAbsolutePath.apply(relativePath, fileName);
             if (Files.notExists(newFilePath)) {
                 Files.createFile(newFilePath);
             }
@@ -192,8 +190,8 @@ public class FilesAndFoldersManager {
     public List<String> getContentList(String relativePathSource, Type type, boolean showExtension) {
         List<String> contentList = new ArrayList<>();
         try {
-            testRelativesPaths(relativePathSource, null);
-            Path folderPath = getAbsolutePath.apply(null, relativePathSource);
+            testPathAndType(relativePathSource, Type.FOLDER);
+            Path folderPath = getAbsolutePath.apply(relativePathSource, null);
 
             // maxDepth = 1 => ne traverse que les éléments dans le dossier source (sans
             // récursivité)
@@ -235,18 +233,19 @@ public class FilesAndFoldersManager {
     public FilesAndFoldersManager copyAllFilesToFolder(String relativePathSource, String relativePathTarget,
                                                        boolean activateReplaceExistingOption) {
         try {
-            testRelativesPaths(relativePathSource, relativePathTarget);
+            testPathAndType(relativePathSource, Type.FOLDER);
+            testPathAndType(relativePathTarget, Type.FOLDER);
 
-            try (Stream<Path> paths = Files.walk(getAbsolutePath.apply(null, relativePathSource), 1)) {
+            try (Stream<Path> paths = Files.walk(getAbsolutePath.apply(relativePathSource, null), 1)) {
                 paths.filter(Files::isRegularFile).forEach(filePath -> {
                     try {
                         if (activateReplaceExistingOption) {
                             Files.copy(filePath,
-                                    getAbsolutePath.apply(filePath.getFileName().toString(), relativePathTarget),
+                                    getAbsolutePath.apply(relativePathTarget, filePath.getFileName().toString()),
                                     StandardCopyOption.REPLACE_EXISTING);
                         } else {
                             Files.copy(filePath,
-                                    getAbsolutePath.apply(filePath.getFileName().toString(), relativePathTarget));
+                                    getAbsolutePath.apply(relativePathTarget, filePath.getFileName().toString()));
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -341,6 +340,30 @@ public class FilesAndFoldersManager {
     }
 
     /**
+     * rename<br>
+     * <p>
+     *     renome un fichier ou un dossier
+     * </p>
+     * @param originalName
+     * @param newName
+     * @param relativePathSource
+     * @return this
+     */
+    public FilesAndFoldersManager rename(String originalName, String newName, String relativePathSource) {
+        try {
+            testPathAndType(relativePathSource, Type.FOLDER);
+
+            Path originalPath = getAbsolutePath.apply(relativePathSource, originalName);
+            Path newPath = getAbsolutePath.apply(relativePathSource, newName);
+            Files.move(originalPath, newPath);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    /**
      * replacePatternInName<br>
      * <p>
      * Remplace ou supprime un motif dans les noms des fichiers ou des dossiers
@@ -365,19 +388,6 @@ public class FilesAndFoldersManager {
     }
 
     /* ***** ***** ***** ***** METHODES METIERS ***** ***** ***** ***** */
-
-    private void testRelativesPaths(String relativePathSource, String relativePathTarget) throws IOException {
-        if (!relativePathExists.test(relativePathSource, Type.FOLDER)) {
-            throw new IOException(String.format("The path '%s\\%s' doesn't exist or isn't a folder.", MAIN_FOLDER_PATH,
-                    relativePathSource));
-        }
-        // teste la cible si != de la source (= vrai déplacement)
-        if (Objects.nonNull(relativePathTarget) && !relativePathSource.equals(relativePathTarget)
-                && !relativePathExists.test(relativePathTarget, Type.FOLDER)) {
-            throw new IOException(String.format("The path '%s\\%s' doesn't exist or isn't a folder.", MAIN_FOLDER_PATH,
-                    relativePathTarget));
-        }
-    }
 
     /**
      * filesMoveTo<br>
@@ -408,9 +418,10 @@ public class FilesAndFoldersManager {
     private void filesMoveTo(Function<String, String> getNewFileName, String relativePathSource,
                              String relativePathTarget, Type type) {
         try {
-            testRelativesPaths(relativePathSource, relativePathTarget);
+            testPathAndType(relativePathSource, Type.FOLDER);
+            testPathAndType(relativePathTarget, Type.FOLDER);
 
-            Path folderPath = getAbsolutePath.apply(null, relativePathSource);
+            Path folderPath = getAbsolutePath.apply(relativePathSource, null);
 
             // maxDepth = 1 => ne traverse que les éléments dans le dossier source (sans
             // récursivité)
@@ -421,8 +432,8 @@ public class FilesAndFoldersManager {
                     try {
                         // applique la fonction de transformation du nom de l'élément
                         // et genère le nouveau path avec le nom transformé
-                        Files.move(filePath, getAbsolutePath.apply(
-                                getNewFileName.apply(filePath.getFileName().toString()), relativePathTarget));
+                        Files.move(filePath, getAbsolutePath.apply(relativePathTarget,
+                                getNewFileName.apply(filePath.getFileName().toString())));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
