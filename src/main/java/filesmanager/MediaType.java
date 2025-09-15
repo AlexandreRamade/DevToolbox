@@ -1,4 +1,4 @@
-package filesmanager.mediaordering;
+package filesmanager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +22,9 @@ public enum MediaType {
     }
 
     public boolean isCompatibleType(String fileName) {
-        return this.extensions.contains(fileName.substring(fileName.lastIndexOf(".")));
+        if(fileName.contains(".")) {
+            return this.extensions.contains(fileName.substring(fileName.lastIndexOf(".")).toLowerCase());
+        }
+        return false;
     }
 }

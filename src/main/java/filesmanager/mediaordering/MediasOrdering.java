@@ -1,22 +1,22 @@
 package filesmanager.mediaordering;
 
 import filesmanager.FilesAndFoldersManager;
+import filesmanager.ImageToBase64Mapper;
+import filesmanager.MediaType;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MediasOrdering {
 
-    public static List<Media> findMedias(String path, MediaType mediaType) {
-        FilesAndFoldersManager manager = new FilesAndFoldersManager(path);
+    public static List<Media> findMedias(String folderPath, MediaType mediaType) {
+        FilesAndFoldersManager manager = new FilesAndFoldersManager(folderPath);
         List<String> files = manager.getContentList("", FilesAndFoldersManager.Type.FILE, true);
+        Map<String, String> imgMap = ImageToBase64Mapper.readAndEncodeAllImagesInFolder(folderPath);
 
         return files.stream()
                 .filter(mediaType::isCompatibleType)
-                .map(Media::new)
+                .map(mediaFileTitle -> new Media(mediaFileTitle, imgMap.get(mediaFileTitle)))
                 .sorted()
                 .collect(Collectors.toList());
     }
@@ -32,14 +32,14 @@ public class MediasOrdering {
         Collections.sort(medias);
     }
 
-    public static void applyOrderToFiles(String path, List<Media> medias) {
+    public static void applyOrderToFiles(String path, List<Media> medias, int digitsNumber) {
         verifyOrderUnicity(medias);
 
         FilesAndFoldersManager manager = new FilesAndFoldersManager(path);
         medias.stream()
                 .filter(Media::toBeRenamed)
                 .forEach(media -> {
-                    manager.rename(media.getFileTitle(), media.getOrderedTitle(), null);
+                    manager.rename(media.getFileTitle(), media.getOrderedTitle(digitsNumber), null);
                 });
     }
 

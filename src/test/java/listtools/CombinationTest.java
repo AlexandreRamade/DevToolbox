@@ -1,5 +1,7 @@
 package listtools;
 
+import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -7,9 +9,8 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
 
-class CombinationTest {
+public class CombinationTest {
 
 //	@Test
 //	void whenOnly1ElementReturnThisElement() {
@@ -21,7 +22,7 @@ class CombinationTest {
 //	}
 	
 	@Test
-	void when2ElementsReturn2Combinations() {
+	public void when2ElementsReturn2Combinations() {
 		List<String> bouchon = Arrays.asList("A", "B");
 		List<List<String>> result = Combination.combinate(bouchon);
 		assertThat(result.size(), is(2));
@@ -31,7 +32,7 @@ class CombinationTest {
 	}
 	
 	@Test
-	void when3ElementsReturn6Combinations() {
+	public void when3ElementsReturn6Combinations() {
 		List<String> bouchon = Arrays.asList("A", "B", "C");
 		List<List<String>> result = Combination.combinate(bouchon);
 		assertThat(result.size(), is(6));
@@ -45,7 +46,7 @@ class CombinationTest {
 	}
 	
 	@Test
-	void when4ElementsReturn24Combinations() {
+	public void when4ElementsReturn24Combinations() {
 		List<String> bouchon = Arrays.asList("A", "B", "C", "D");
 		List<List<String>> result = Combination.combinate(bouchon);
 		assertThat(result.size(), is(24));
