@@ -3,10 +3,13 @@ package filesmanager;
 import stringtools.Increment;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -384,6 +387,48 @@ public class FilesAndFoldersManager {
         Pattern pattern = Pattern.compile(patternToReplace);
         this.filesMoveTo((fileName) -> pattern.matcher(fileName).replaceAll(replacementValue), relativePathSource,
                 relativePathSource, type);
+        return this;
+    }
+
+    public FilesAndFoldersManager deleteFile(String fileName, String relativePath) {
+        try {
+            testPathAndType(relativePath, Type.FOLDER);
+
+            Path filePath = getAbsolutePath.apply(relativePath, fileName);
+            if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+                Files.delete(filePath);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return this;
+    }
+
+    public FilesAndFoldersManager deleteFolderAndContent(String folderName, String relativePath) {
+        try {
+            testPathAndType(relativePath, Type.FOLDER);
+
+            Path folderPath = getAbsolutePath.apply(relativePath, folderName);
+            if(Files.exists(folderPath) && Files.isDirectory(folderPath)) {
+
+                Files.walkFileTree(folderPath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file); // Supprime le fichier
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete(dir); // Supprime le dossier après ses fichiers
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+
+            }
+        }catch(IOException e) {
+            e.printStackTrace();
+        }
         return this;
     }
 
