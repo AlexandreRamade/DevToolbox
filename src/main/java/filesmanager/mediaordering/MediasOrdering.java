@@ -43,6 +43,15 @@ public class MediasOrdering {
                 });
     }
 
+    public static List<Media> deleteUnorderedFiles(String path, List<Media> medias) {
+        FilesAndFoldersManager manager = new FilesAndFoldersManager(path);
+        medias.stream()
+                .filter(m -> !m.isOrdered())
+                .forEach(media -> manager.deleteFile(media.getFileTitle(), null));
+
+        return medias.stream().filter(Media::isOrdered).collect(Collectors.toList());
+    }
+
     private static void verifyOrderUnicity(List<Media> medias) {
         Set<Integer> orders = new HashSet<>();
         List<Media> duplicates = medias.stream().filter(Media::isOrdered).filter(media -> !orders.add(media.getOrder())).collect(Collectors.toList());
