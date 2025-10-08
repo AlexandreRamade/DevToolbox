@@ -32,6 +32,11 @@ public class MediasOrdering {
         Collections.sort(medias);
     }
 
+    public static void applyOrderToFilesAndDeleteUnorderedFiles(String path, List<Media> medias, int digitsNumber) {
+        List<Media> orderedMedias = deleteUnorderedFiles(path, medias);
+        applyOrderToFiles(path, orderedMedias, digitsNumber);
+    }
+
     public static void applyOrderToFiles(String path, List<Media> medias, int digitsNumber) {
         verifyOrderUnicity(medias);
 
