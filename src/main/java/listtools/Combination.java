@@ -8,6 +8,8 @@ public class Combination {
 	public static <T> List<List<T>> combinate(List<T> elements) {
         List<List<T>> combinations = new ArrayList<>();
         generateCombinations(elements, new ArrayList<>(), combinations, new boolean[elements.size()]);
+        System.out.println("Nombre d'éléments : " + elements.size());
+        System.out.println("Nombre de combinaisons : " + combinations.size());
         System.out.println(combinations);
         return combinations;
     }

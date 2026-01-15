@@ -157,6 +157,18 @@ public class StringListManager {
         return this;
     }
 
+    public StringListManager filtrerSiContient(String motifAChercher) {
+        String motif = String.format(".*%s.*", motifAChercher);
+        liste = liste.filter(str -> str.matches(motif));
+        return this;
+    }
+
+    public StringListManager removeSiContient(String motifAChercher) {
+        String motif = String.format(".*%s.*", motifAChercher);
+        liste = liste.filter(str -> !str.matches(motif));
+        return this;
+    }
+
     /**
      * ordonnerListe <br>
      * <p>
@@ -312,6 +324,11 @@ public class StringListManager {
         return this;
     }
 
+    public StringListManager supprimerGuillemets() {
+        liste = liste.map(str -> str.replaceAll("\"", ""));
+        return this;
+    }
+
     public StringListManager countOcurenceInEachLine(String motif) {
         Pattern pattern = Pattern.compile(motif);
         liste = liste.map(str -> String.format("%s apparait %d fois dans : %s", motif, countMatches(pattern, str), str));
@@ -334,6 +351,33 @@ public class StringListManager {
 
     /** ***** ***** AFFICHAGE DU RESULTAT ***** ***** */
 
+    public void testerEtAfficherDoublons() {
+        List<String> listeCourrante = liste.collect(Collectors.toList());
+        System.out.println(String.format("Nombre d'éléments dans la liste avant filtrage = %d", listeCourrante.size()));
+
+        /*List<String> doublons = listeCourrante.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .filter(e -> e.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .toList();*/
+
+        Set<String> vus = new HashSet<>();
+        List<String> doublons = listeCourrante.stream()
+                .filter(s -> !vus.add(s))
+                .toList();
+
+
+        if(doublons.isEmpty()) {
+            System.out.println("Aucun doublons détecté");
+        } else {
+            System.out.println("Nombre de doublons = " + doublons.size());
+            System.out.println(String.format("Nombre d'éléments dans la liste sans doublons = %d", (listeCourrante.size() - doublons.size())));
+            System.out.println("Liste des doublons : ");
+            doublons.forEach(System.out::println);
+        }
+    }
+
     public StringListManager afficherTailleListePuis() {
         List<String> listeCourrante = liste.collect(Collectors.toList());
         System.out.println(String.format("Nombre d'éléments dans la liste = %d", listeCourrante.size()));
@@ -347,6 +391,10 @@ public class StringListManager {
 
     public void afficherListe() {
         liste.forEach(System.out::println);
+    }
+
+    public void concatenerEtAfficher() {
+        System.out.println(liste.collect(Collectors.joining()));
     }
 
     public void afficherEnLigne(String separateur) {

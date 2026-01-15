@@ -120,20 +120,34 @@ public class ComparatorListManager {
 			this.findSpecificItemsInReferenceList();
 			this.findSpecificItemsInListB();
 		}
+
+        public void compareContentIgnoringCase() {
+            this.listRef = listRef.stream().map(String::toLowerCase).collect(Collectors.toList());
+            this.listB = listB.stream().map(String::toLowerCase).collect(Collectors.toList());
+            this.findCommonItems();
+            this.findSpecificItemsInReferenceList();
+            this.findSpecificItemsInListB();
+        }
 		
 		
 		/** ***** ***** AFFICHAGE ***** ***** */
+
+        public void displayOnlySizeComparisonResultInConsole() {
+            System.out.println(String.format(" -> Elements communs présents dans les 2 listes : %s", this.commonItems.size()));
+            System.out.println(String.format(" -> Elements dans la liste de référence et non présents dans la liste B : %s", this.specificToListRef.size()));
+            System.out.println(String.format(" -> Elements en trop dans la liste B et non présents dans la liste de référence : %s", this.specificToListB.size()));
+        }
 		
 		public void displayComparisonResultInConsole(boolean showLineNumbers) {
-			displayResultInConsole("Elements dans la liste de référence et non présents dans la liste B : ", this.specificToListRef, showLineNumbers);
-			System.out.println("\n ----- ----- ----- ----- ----- \n");
-			displayResultInConsole("Elements en trop dans la liste B et non présents dans la liste de référence : ", this.specificToListB, showLineNumbers);
-//			System.out.println("\n ----- ----- ----- ----- ----- \n");
-//			displayResultInConsole("Elements communs présents dans les 2 listes : ", this.commonItems, showLineNumbers);
+			displayResultInConsole(" -> Elements dans la liste de référence et non présents dans la liste B : ", this.specificToListRef, showLineNumbers);
+			System.out.println("\n -------------------- ");
+			displayResultInConsole(" -> Elements en trop dans la liste B et non présents dans la liste de référence : ", this.specificToListB, showLineNumbers);
+			//System.out.println("\n -------------------- ");
+			//displayResultInConsole(" -> Elements communs présents dans les 2 listes : ", this.commonItems, showLineNumbers);
 		}
 		
 		private void displayResultInConsole(String comment, List<String> list, boolean showLineNumbers) {
-			System.err.println(comment + list.size());
+			System.out.println(comment + list.size());
 			List<String> listToDispay = showLineNumbers ? addLineNumber(list, "- ") : list;
 			System.out.println(listToDispay.stream().collect(Collectors.joining(SEPARATOR)));
 		}
