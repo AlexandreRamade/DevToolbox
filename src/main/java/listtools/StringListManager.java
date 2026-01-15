@@ -355,27 +355,27 @@ public class StringListManager {
         List<String> listeCourrante = liste.collect(Collectors.toList());
         System.out.println(String.format("Nombre d'éléments dans la liste avant filtrage = %d", listeCourrante.size()));
 
-        /*List<String> doublons = listeCourrante.stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream()
-                .filter(e -> e.getValue() > 1)
-                .map(Map.Entry::getKey)
-                .toList();*/
+        Map<String, Long> apparition = listeCourrante.stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-        Set<String> vus = new HashSet<>();
-        List<String> doublons = listeCourrante.stream()
-                .filter(s -> !vus.add(s))
-                .toList();
+        if(apparition.keySet().size() != listeCourrante.size()) {
+            Long nombreDeDoublons = apparition.values().stream()
+                    .filter(nb -> nb > 1)
+                    .reduce(0L, Long::sum);
+            List<String> doublons = apparition.entrySet().stream()
+                    .filter(e -> e.getValue() > 1)
+                    .map(entry -> entry.getValue() + " : " + entry.getKey())
+                    .collect(Collectors.toList());
 
-
-        if(doublons.isEmpty()) {
-            System.out.println("Aucun doublons détecté");
-        } else {
-            System.out.println("Nombre de doublons = " + doublons.size());
-            System.out.println(String.format("Nombre d'éléments dans la liste sans doublons = %d", (listeCourrante.size() - doublons.size())));
+            System.out.println("Nombre de doublons = " + nombreDeDoublons);
+            System.out.println(String.format("Nombre d'éléments dans la liste sans doublons = %d", (listeCourrante.size() - nombreDeDoublons)));
             System.out.println("Liste des doublons : ");
             doublons.forEach(System.out::println);
+
+        } else {
+            System.out.println("Aucun doublons détecté");
         }
+
     }
 
     public StringListManager afficherTailleListePuis() {
