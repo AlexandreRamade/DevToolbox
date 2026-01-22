@@ -1,9 +1,6 @@
 package listtools;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -21,6 +18,9 @@ import stringtools.Increment;
  *
  */
 public class ComparatorListManager {
+		public static final int COMMON_ITEMS = 0;
+		public static final int SPECIFIC_LIST_REF_ITEMS = 1;
+		public static final int SPECIFIC_LIST_B_ITEMS = 2;
 		
 		private String LIST_REF = "A\r\n" + "B\r\n" + "C\r\n" + "B";
 		private String LIST_B = "A\r\n" + "B\r\n" + "D\r\n";
@@ -81,23 +81,25 @@ public class ComparatorListManager {
 			this.listB = listB;
 		}
 
+		public List<String> getCommonItems() { return commonItems; }
+
 		public List<String> getSpecificToListRef() {
 			return specificToListRef;
-		}
-
-		public void setSpecificToListRef(List<String> specificToListRef) {
-			this.specificToListRef = specificToListRef;
 		}
 
 		public List<String> getSpecificToListB() {
 			return specificToListB;
 		}
 
-		public void setSpecificToListB(List<String> specificToListB) {
-			this.specificToListB = specificToListB;
+		public List<String> getList(int comparaisonListToGet) {
+			switch (comparaisonListToGet) {
+				case COMMON_ITEMS: return commonItems;
+				case SPECIFIC_LIST_REF_ITEMS: return specificToListRef;
+				case SPECIFIC_LIST_B_ITEMS: return specificToListB;
+				default: return Collections.EMPTY_LIST;
+			}
 		}
 
-		
 		/** ***** ***** METHODES DE TRAITEMENT ***** ***** */
 		
 		public List<String> findCommonItems() {
