@@ -2,10 +2,9 @@ package filesmanager;
 
 import listtools.ComparatorListManager;
 import listtools.StringListManager;
-import stringtools.StringTools;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,11 +42,16 @@ public class FilesComparator {
         StringListManager manager = new StringListManager(liste);
         // traitement personnalisé à compléter ici
         manager
-                //.extraireVariableUneSeuleFoisParLigne("(^.+?;.+?;.+?;.+?);.*");
-                .traitementPersonnalise(str -> str.substring(0, StringTools.indexOfNthOccurrence(";", 4, str)))
+                .extraireVariableUneSeuleFoisParLigne("(^.+?;.+?;.+?;.+?);.*")
+                //.extraireVariableUneSeuleFoisParLigne("^.+?;(.+?;.+?;.+?);.*")
+                //.traitementPersonnalise(str -> str.substring(0, StringTools.indexOfNthOccurrence(";", 4, str)))
                 .supprimerDoublons()
                 .traitementPersonnalise(String::toLowerCase);
         //fin du traitement personnalisé
+
+        // si ignore case + format CSV alors passer le flag à true
+        ignoreCase = false;
+
         return manager.getListe();
     }
 
@@ -61,28 +65,30 @@ public class FilesComparator {
     }
 
     public FilesComparator compareFilesSansDoublons() {
-        StringListManager manager1 = new StringListManager(fileName1);
+        StringListManager manager1 = new StringListManager(contentFile1);
         manager1.supprimerDoublons();
-        StringListManager manager2 = new StringListManager(fileName2);
+        StringListManager manager2 = new StringListManager(contentFile2);
         manager2.supprimerDoublons();
         compareFiles(manager1.getListe(), manager2.getListe());
         return this;
     }
 
     public FilesComparator compareFilesIgnoringCase() {
-        StringListManager manager1 = new StringListManager(fileName1);
-        manager1.traitementPersonnalise(String::toLowerCase);
-        StringListManager manager2 = new StringListManager(fileName2);
-        manager2.traitementPersonnalise(String::toLowerCase);
+        ignoreCase = true;
+        StringListManager manager1 = new StringListManager(contentFile1);
+        manager1.toLowerCase();
+        StringListManager manager2 = new StringListManager(contentFile2);
+        manager2.toLowerCase();
         compareFiles(manager1.getListe(), manager2.getListe());
         return this;
     }
 
     public FilesComparator compareFilesIgnoringCaseAndSansDoublons() {
-        StringListManager manager1 = new StringListManager(fileName1);
-        manager1.supprimerDoublons().traitementPersonnalise(String::toLowerCase);
-        StringListManager manager2 = new StringListManager(fileName2);
-        manager2.supprimerDoublons().traitementPersonnalise(String::toLowerCase);
+        ignoreCase = true;
+        StringListManager manager1 = new StringListManager(contentFile1);
+        manager1.supprimerDoublons().toLowerCase();
+        StringListManager manager2 = new StringListManager(contentFile2);
+        manager2.supprimerDoublons().toLowerCase();
         compareFiles(manager1.getListe(), manager2.getListe());
         return this;
     }
@@ -132,42 +138,35 @@ public class FilesComparator {
     private List<Map<String, String>> contentCSVFile1;
     private List<Map<String, String>> contentCSVFile2;
     private boolean csvOption = false;
-
-    public FilesComparator addColumn(String columnTitle) {
-        this.columnsToCompare.add(columnTitle);
-        return this;
-    }
+    private boolean ignoreCase = false;
 
     /**
-     * Active la comparaison de fichiers au format CSV sans préciser les colonnes à comparer
-     * Remarque : les colonnes à comparer doivent être définies au préalable avec {{@link this#addColumn(String)}}
+     * Active la comparaison de fichiers au format CSV
+     * @param columnTitles titres des colonnes à comparer
      * @return FileComparator
      */
-    public FilesComparator csvFiles() {
-        return csvFiles(Collections.EMPTY_LIST);
+    public FilesComparator csvFiles(String... columnTitles) {
+        return csvFiles(Arrays.asList(columnTitles));
     }
 
     /**
-     * Active la comparaison de fichiers au format CSV en précisant les colonnes à comparer
-     * @param columnsToCompare
+     * Active la comparaison de fichiers au format CSV
+     * @param columnsToCompare liste des titres des colonnes à comparer
      * @return FileComparator
      */
     public FilesComparator csvFiles(List<String> columnsToCompare) {
-        completeColumnsToCompareList(columnsToCompare, contentCSVFile1.get(0));
+        this.contentCSVFile1 = FilesReader.readCsvFile(directory, fileName1);
+        this.contentCSVFile2 = FilesReader.readCsvFile(directory, fileName2);
 
+        completeColumnsToCompareList(columnsToCompare, contentCSVFile1.get(0));
         // si aucune colonne n'est précisée pour la comparaison on reste en mode classique
         if(this.columnsToCompare.isEmpty()) {
             return this;
         }
 
         csvOption = true;
-
-        this.contentCSVFile1 = FilesReader.readCsvFile(directory, fileName1);
-        this.contentCSVFile2 = FilesReader.readCsvFile(directory, fileName2);
-
         generateComparativeValueForEachCsvLine(contentCSVFile1);
         generateComparativeValueForEachCsvLine(contentCSVFile2);
-
         this.contentFile1 = extractComparativeValues(contentCSVFile1);
         this.contentFile2 = extractComparativeValues(contentCSVFile2);
 
@@ -175,16 +174,13 @@ public class FilesComparator {
     }
 
     private void completeColumnsToCompareList(List<String> columnsToCompare, Map<String, String> csvLineDatas) {
-        // liste fournie en param
-        if(columnsToCompare != null && !columnsToCompare.isEmpty()) {
-            this.columnsToCompare.addAll(columnsToCompare);
-        }
-
-        // validation des noms de colonnes (fournies via liste en param ou via addColumn)
-        this.columnsToCompare.stream()
-                .filter(columnTitle -> !csvLineDatas.containsKey(columnTitle))
-                .forEach(columnTitle -> System.err.printf("ATTENTION : la colonne '%s' n'existe pas dans le fichier SCV fourni !%n", columnTitle));
-        this.columnsToCompare = this.columnsToCompare.stream().filter(csvLineDatas::containsKey).collect(Collectors.toList());
+        columnsToCompare.forEach(columnTitle -> {
+            if(csvLineDatas.containsKey(columnTitle)) {
+                this.columnsToCompare.add(columnTitle);
+            } else {
+                System.err.printf("ATTENTION : la colonne '%s' n'existe pas dans le fichier SCV fourni !%n", columnTitle);
+            }
+        });
     }
 
     private void generateComparativeValueForEachCsvLine(List<Map<String, String>> contentCSVFile) {
@@ -200,9 +196,18 @@ public class FilesComparator {
     }
 
     private List<Map<String, String>> getCsvContentFromComparativeValues(List<String> comparativeValues, List<Map<String, String>> contentCSVFile) {
+        if(ignoreCase) {
+            contentCSVFile.forEach(csvLineData -> csvLineData.put(COMPARATIVE_VALUE_KEY, csvLineData.get(COMPARATIVE_VALUE_KEY).toLowerCase()));
+        }
         return contentCSVFile.stream()
                 .filter(csvLineData -> comparativeValues.contains(csvLineData.get(COMPARATIVE_VALUE_KEY)))
+                .map(this::removeComparativeValueKey)
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, String> removeComparativeValueKey(Map<String, String> csvLineData) {
+        csvLineData.remove(COMPARATIVE_VALUE_KEY);
+        return csvLineData;
     }
 
     public ComparatorListManager getComparatorListManager() {

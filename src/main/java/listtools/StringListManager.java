@@ -314,8 +314,23 @@ public class StringListManager {
         return this;
     }
 
+    public StringListManager toLowerCase() {
+        liste = liste.map(String::toLowerCase);
+        return this;
+    }
+
     public StringListManager supprimerDoublons() {
         liste = liste.distinct();
+        return this;
+    }
+
+    public StringListManager supprimerElementSiNull() {
+        liste = liste.filter(Objects::nonNull);
+        return this;
+    }
+
+    public StringListManager supprimerElementSiEmptyOrBlank() {
+        liste = liste.filter(String::isBlank);
         return this;
     }
 
