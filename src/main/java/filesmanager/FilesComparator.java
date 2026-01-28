@@ -33,7 +33,7 @@ public class FilesComparator {
     /**
      * ATTENTION : méthode à personnaliser
      */
-    public FilesComparator compareFilesApresTraitement() {
+    public FilesComparator compareFilesApresTraitementPersonalise() {
         compareFiles(traitementPersonnalise(this.contentFile1), traitementPersonnalise(this.contentFile2));
         return this;
     }
@@ -46,10 +46,10 @@ public class FilesComparator {
                 //.extraireVariableUneSeuleFoisParLigne("^.+?;(.+?;.+?;.+?);.*")
                 //.traitementPersonnalise(str -> str.substring(0, StringTools.indexOfNthOccurrence(";", 4, str)))
                 .supprimerDoublons()
-                .traitementPersonnalise(String::toLowerCase);
+                .toLowerCase();
         //fin du traitement personnalisé
 
-        // si ignore case + format CSV alors passer le flag à true
+        // si toLowerCase + format CSV alors passer le flag à true
         ignoreCase = false;
 
         return manager.getListe();
@@ -129,7 +129,11 @@ public class FilesComparator {
         comparatorListManager.compareContent();
         comparatorListManager.displayOnlySizeComparisonResultInConsole();
         System.out.println("\n ----------------------- \n");
+    }
+
+    public FilesComparator displayComparisonResultInConsole() {
         comparatorListManager.displayComparisonResultInConsole(false);
+        return this;
     }
 
     private static final String COMPARATIVE_VALUE_KEY = "comparativeValueKey";
