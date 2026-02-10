@@ -22,7 +22,12 @@ import java.util.stream.Stream;
  */
 public class StringListManager {
 
+    private final static String NUMBER_REGEX = "[+-]?([0-9]*[.])?[0-9]+";
+    private final static String EXCTRACT_NUMBER = "(" + NUMBER_REGEX + ")";
+
     private Stream<String> liste;
+
+    private List<Double> numbers;
 
 
     /** ***** ***** CONSTRUCTEURS ***** ***** */
@@ -54,6 +59,10 @@ public class StringListManager {
     	return this.liste.map(function::apply).collect(Collectors.toList());
     }
 
+    public List<Double> getListeNumbers() {
+        return numbers;
+    }
+
 
     /** ***** ***** METHODES DE TRAITEMENT ***** ***** */
 
@@ -70,6 +79,21 @@ public class StringListManager {
     public StringListManager remplacerMotif(String motifARemplacer, String elementAInserer) {
         Pattern pattern = Pattern.compile(motifARemplacer);
         liste = liste.map(str -> pattern.matcher(str).replaceAll(elementAInserer));
+        return this;
+    }
+
+    public StringListManager substringStartTo(int end) {
+    	liste = liste.map(str -> str.substring(0, end));
+        return this;
+    }
+
+    public StringListManager substringFromToEnd(int start) {
+    	liste = liste.map(str -> str.substring(start));
+        return this;
+    }
+
+    public StringListManager substrings(int start, int end) {
+    	liste = liste.map(str -> str.substring(start, end));
         return this;
     }
 
@@ -100,7 +124,7 @@ public class StringListManager {
     /**
      * extraireUneSeuleVariableParLigne<br>
      * <p>
-     * extrait valeur variable au sein d'un motif constant une seule fois par ligne (la première occurence)<br>
+     * extrait valeur variable au sein d'un motif constant une seule fois par ligne (la première occurrence)<br>
      * Exemple d'utilisation :<br>
      * liste = action: imprimer, action: sauvegarder, action: restaurer<br>
      * extraireVariable("action: (.*)") => imprimer, sauvegarder, restaurer
@@ -108,26 +132,25 @@ public class StringListManager {
      * <u>utiliser le motif (.*) (ou (.*?) en mode Non-Greedy) pour identifier la partie variable à
      * extraire</u>
      *
-     * @param motifAvecVaribleAExtraire
+     * @param motifAvecVariableAExtraire
      * @return l'instance de TraiterListeStrings
      */
-    public StringListManager extraireVariableUneSeuleFoisParLigne(String motifAvecVaribleAExtraire) {
-        String motif = String.format(".*%s.*", motifAvecVaribleAExtraire);
-        Pattern pattern = Pattern.compile(motifAvecVaribleAExtraire);
-        liste = liste.filter(str -> str.matches(motif)).map(str -> {
+    public StringListManager extraireVariableUneSeuleFoisParLigne(String motifAvecVariableAExtraire) {
+        Pattern pattern = Pattern.compile(motifAvecVariableAExtraire);
+        liste = liste.map(str -> {
             Matcher matcher = pattern.matcher(str);
             if (matcher.find()) {
                 return matcher.group(1);
             }
             return null;
-        });
+        }).filter(Objects::nonNull);
         return this;
     }
 
     /**
      * extraireVariablePlusieursFoirParLigne<br>
      * <p>
-     * extrait une valeur variable au sein d'un motif constant autant de fois que le motif apparait dans la ligne (plusieurs occurences par lignes)<br>
+     * extrait une valeur variable au sein d'un motif constant autant de fois que le motif apparait dans la ligne (plusieurs occurrences par lignes)<br>
      * Exemple d'utilisation :<br>
      * liste = action: imprimer, action: sauvegarder, action: restaurer<br>
      * extraireVariable("action: (.*)") => imprimer, sauvegarder, restaurer
@@ -135,20 +158,41 @@ public class StringListManager {
      * <u>utiliser le motif (.*) (ou (.*?) en mode Non-Greedy) pour identifier la partie variable à
      * extraire</u>
      *
-     * @param motifAvecVaribleAExtraire
+     * @param motifAvecVariableAExtraire
      * @return l'instance de TraiterListeStrings
      */
-    public StringListManager extraireVariablePlusieursFoisParLigne(String motifAvecVaribleAExtraire) {
-        String motif = String.format(".*%s.*", motifAvecVaribleAExtraire);
-        Pattern pattern = Pattern.compile(motifAvecVaribleAExtraire);
-        liste = liste.filter(str -> str.matches(motif)).flatMap(str -> {
-            List<String> matchs = new ArrayList<>();
+    public StringListManager extraireVariablePlusieursFoisParLigne(String motifAvecVariableAExtraire) {
+        Pattern pattern = Pattern.compile(motifAvecVariableAExtraire);
+        liste = liste.flatMap(str -> pattern.matcher(str).results().map(result -> result.group(1)));
+        return this;
+    }
+
+    /**
+     * extraireNthOccurrenceDeLaLigne<br>
+     * <p>
+     * extrait valeur énième variable de la ligne au sein d'un motif constant (la énième occurrence)<br>
+     * Exemple d'utilisation :<br>
+     * liste = resultats : 10 20 30, résultats : 55 66 77, résultats : 105 222 359<br>
+     * extraireVariable("([0-9]+)", 3) => 30, 77, 359
+     * </p>
+     * <u>utiliser le motif (.*) (ou (.*?) en mode Non-Greedy) pour identifier la partie variable à
+     * extraire</u>
+     *
+     * @param motifAvecVariableAExtraire
+     * @return l'instance de TraiterListeStrings
+     */
+    public StringListManager extraireNthOccurrenceDeLaLigne(String motifAvecVariableAExtraire, int n) {
+        Pattern pattern = Pattern.compile(motifAvecVariableAExtraire);
+        liste = liste.map(str -> {
             Matcher matcher = pattern.matcher(str);
+            int count = 0;
             while (matcher.find()) {
-                matchs.add(matcher.group(1));
+                if (++count == n) {
+                    return matcher.group(1);
+                }
             }
-            return matchs.stream();
-        });
+            return null;
+        }).filter(Objects::nonNull);
         return this;
     }
 
@@ -362,6 +406,65 @@ public class StringListManager {
     public StringListManager decouperChaqueElement(String separator) {
     	this.liste = this.liste.flatMap(str -> Arrays.asList(str.split(separator)).stream());
     	return this;
+    }
+
+    /** ***** ***** METHODES DE TRAITEMENT d'une liste de nombres ***** ***** */
+
+    /**
+     * extraireNombres<br>
+     * <p>
+     * extrait une valeur numérique au sein d'un motif constant une seule fois par ligne (la première occurrence)<br>
+     * Exemple d'utilisation :<br>
+     * liste = montant : +5.2 €, montant : +10 €, montant : -3.0 €<br>
+     * extraireVariable("montant : NUMBER €") => 5.2, 10.0, -3.0
+     * </p>
+     * <u>utiliser le motif NUMBER pour identifier la localisation de la valeur à extraire</u>
+     *
+     * @param motifAvecNombreAExtraire
+     * @return l'instance de TraiterListeStrings
+     */
+    public StringListManager extraireNombres(String motifAvecNombreAExtraire) {
+        this.extraireVariableUneSeuleFoisParLigne(motifAvecNombreAExtraire.replaceAll("NUMBER", EXCTRACT_NUMBER));
+        this.numbers = castAndGetListe(Double::parseDouble);
+        return this;
+    }
+
+    /**
+     * extraireNombres<br>
+     * <p>
+     * extrait la énième valeur numérique de la ligne (la énième occurrence)<br>
+     * Exemple d'utilisation :<br>
+     * liste = Prix HT +5.2€ TTC +6.5€, Prix HT +10€ TTC +12€, Prix HT -3€ TTC -4.2€<br>
+     * extraireNombres(2) => 6.5, 12, -4.2
+     * </p>
+     *
+     * @param nthOccurrence
+     * @return l'instance de TraiterListeStrings
+     */
+    public StringListManager extraireNombres(int nthOccurrence) {
+        this.extraireNthOccurrenceDeLaLigne(EXCTRACT_NUMBER, nthOccurrence);
+        this.numbers = castAndGetListe(Double::parseDouble);
+        return this;
+    }
+
+    public Double calculerSomme() {
+        return numbers.stream().reduce(0.0, Double::sum);
+    }
+
+    public Double calculerMoyenne() {
+        return calculerSomme() / numbers.size();
+    }
+
+    public void afficherListeNombreInfos() {
+        List<Double> ordonnee = numbers.stream().sorted().collect(Collectors.toList());
+
+        System.out.println("----- ----- Liste de nombres ----- -----");
+        System.out.println(String.format("Nombre d'éléments dans la liste = %d", numbers.size()));
+        System.out.println(String.format("Valeur la plus petite = %f", ordonnee.get(0)));
+        System.out.println(String.format("Valeur la plus grande = %f", ordonnee.get(numbers.size() - 1)));
+        System.out.println(String.format("Somme des valeurs = %f", calculerSomme()));
+        System.out.println(String.format("Moyenne des valeurs = %f", calculerMoyenne()));
+        System.out.println("----- ----- ----- ----- -----");
     }
 
     /** ***** ***** AFFICHAGE DU RESULTAT ***** ***** */
