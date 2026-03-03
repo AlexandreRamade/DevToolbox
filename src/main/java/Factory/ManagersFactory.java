@@ -1,9 +1,11 @@
 package Factory;
 
+import filesmanager.FileContentManager;
 import filesmanager.FilesAndFoldersManager;
 import filesmanager.FilesComparator;
 import filesmanager.FilesReader;
 import listtools.ComparatorListManager;
+import listtools.MixerListManager;
 import listtools.StringListManager;
 
 import java.util.List;
@@ -33,6 +35,18 @@ public class ManagersFactory {
     public static StringListManager getStringListManagerFromFile(String path, String file) {
         List<String> content = FilesReader.readAllLinesInFile(path, file);
         return new StringListManager(content);
+    }
+
+    public static FileContentManager getFileContentManager(String directory, String fileName) {
+        return new FileContentManager(directory, fileName);
+    }
+
+    public static MixerListManager getMixerListManager(List<String> liste1, List<String> liste2) {
+        return new MixerListManager(liste1, liste2);
+    }
+
+    public static MixerListManager getMixerListManagerFromFiles(String directory, String fileName1, String fileName2) {
+        return new MixerListManager(FilesReader.readAllLinesInFile(directory, fileName1), FilesReader.readAllLinesInFile(directory, fileName2));
     }
 
 

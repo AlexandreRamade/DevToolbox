@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -44,6 +45,12 @@ public class StringListManager {
         liste = Arrays.asList(stringADecouper.split(separateur)).stream();
     }
 
+    /** ***** ***** METHODES SET ***** ***** */
+
+    public StringListManager setListe(List<String> listeStrings) {
+    	liste = listeStrings.stream();
+    	return this;
+    }
     
     /** ***** ***** METHODES GET ***** ***** */
     
@@ -338,17 +345,8 @@ public class StringListManager {
     
 
     public StringListManager appliquerStringFormatPattern(String stringFormatPattern) {
-        int occurrence = 0;
-        Matcher m = Pattern.compile("%s").matcher(stringFormatPattern);
-        while (m.find()) {
-            occurrence++;
-        }
-        if (occurrence == 1) {
-            liste = liste.map(str -> String.format(stringFormatPattern, str));
-        } else if (occurrence == 2) {
-            liste = liste.map(str -> String.format(stringFormatPattern, str, str));
-        } else if (occurrence == 3) {
-            liste = liste.map(str -> String.format(stringFormatPattern, str, str, str));
+        if(stringFormatPattern.contains("%s")) {
+            liste = liste.map(str -> stringFormatPattern.replaceAll("%s", str));
         }
         return this;
     }
@@ -360,6 +358,24 @@ public class StringListManager {
 
     public StringListManager toLowerCase() {
         liste = liste.map(String::toLowerCase);
+        return this;
+    }
+
+    public StringListManager toUpperCase() {
+        liste = liste.map(String::toUpperCase);
+        return this;
+    }
+
+    public StringListManager toSansAccent() {
+        liste = liste.map(str -> java.text.Normalizer.normalize(str, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", ""));
+        return this;
+    }
+
+    public StringListManager toScreamingSnakeCase() {
+        toSansAccent();
+        toUpperCase();
+        liste = liste.map(str -> str.replaceAll("[ '-]", "_"));
         return this;
     }
 
@@ -406,6 +422,38 @@ public class StringListManager {
     public StringListManager decouperChaqueElement(String separator) {
     	this.liste = this.liste.flatMap(str -> Arrays.asList(str.split(separator)).stream());
     	return this;
+    }
+
+    /** ***** ***** METHODES DE TRAITEMENT portant sur la liste ***** ***** */
+
+    public StringListManager tronquerLaListe(int tailleListe) {
+        liste = liste.limit(tailleListe);
+        return this;
+    }
+
+    public StringListManager dupliquerChaqueElement(int nbCopie) {
+        liste = liste.flatMap(str -> IntStream.range(0, nbCopie).mapToObj(i -> str));
+        return this;
+    }
+
+    public StringListManager dupliquerLaListe(int nbCopie) {
+        List<String> listeOriginale = liste.collect(Collectors.toList());
+        liste = IntStream.range(0, nbCopie).boxed().flatMap(i -> listeOriginale.stream());
+        return this;
+    }
+
+    public StringListManager dupliquerLaListeJusquA(int tailleListe) {
+        List<String> listeOriginale = liste.collect(Collectors.toList());
+        int listeSize = listeOriginale.size();
+
+        if(listeSize > tailleListe) {
+            liste = listeOriginale.stream().limit(tailleListe);
+            return this;
+        }
+
+        int nbCopie = (int) Math.ceil((double) tailleListe / listeSize);
+        liste = IntStream.range(0, nbCopie).boxed().flatMap(i -> listeOriginale.stream()).limit(tailleListe);
+        return this;
     }
 
     /** ***** ***** METHODES DE TRAITEMENT d'une liste de nombres ***** ***** */

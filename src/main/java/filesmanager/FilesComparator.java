@@ -182,7 +182,7 @@ public class FilesComparator {
             if(csvLineDatas.containsKey(columnTitle)) {
                 this.columnsToCompare.add(columnTitle);
             } else {
-                System.err.printf("ATTENTION : la colonne '%s' n'existe pas dans le fichier SCV fourni !%n", columnTitle);
+                System.err.printf("ATTENTION : la colonne '%s' n'existe pas dans le fichier CSV fourni !%n", columnTitle);
             }
         });
     }
