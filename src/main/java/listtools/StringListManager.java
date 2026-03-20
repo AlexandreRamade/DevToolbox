@@ -30,6 +30,8 @@ public class StringListManager {
 
     private List<Double> numbers;
 
+    private String savedLine;
+
 
     /** ***** ***** CONSTRUCTEURS ***** ***** */
 
@@ -425,6 +427,18 @@ public class StringListManager {
     }
 
     /** ***** ***** METHODES DE TRAITEMENT portant sur la liste ***** ***** */
+
+    public StringListManager removeAndSaveFirstLine() {
+        List<String> listeOriginale = liste.collect(Collectors.toList());
+        this.savedLine = listeOriginale.get(0);
+        this.liste = listeOriginale.subList(1, listeOriginale.size()).stream();
+        return this;
+    }
+
+    public StringListManager applySavedFirstLine() {
+        this.liste = Stream.concat(Stream.of(savedLine), liste);
+        return this;
+    }
 
     public StringListManager tronquerLaListe(int tailleListe) {
         liste = liste.limit(tailleListe);
