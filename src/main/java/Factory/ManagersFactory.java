@@ -1,10 +1,12 @@
 package Factory;
 
+import filesmanager.DoubleFilesManager;
 import filesmanager.FileContentManager;
 import filesmanager.FilesAndFoldersManager;
 import filesmanager.FilesComparator;
 import filesmanager.FilesReader;
 import listtools.ComparatorListManager;
+import listtools.DoubleStringListManager;
 import listtools.MixerListManager;
 import listtools.StringListManager;
 
@@ -32,11 +34,6 @@ public class ManagersFactory {
         return new FilesComparator(directory, fileName1, fileName2);
     }
 
-    public static StringListManager getStringListManagerFromFile(String path, String file) {
-        List<String> content = FilesReader.readAllLinesInFile(path, file);
-        return new StringListManager(content);
-    }
-
     public static FileContentManager getFileContentManager(String directory, String fileName) {
         return new FileContentManager(directory, fileName);
     }
@@ -49,5 +46,15 @@ public class ManagersFactory {
         return new MixerListManager(FilesReader.readAllLinesInFile(directory, fileName1), FilesReader.readAllLinesInFile(directory, fileName2));
     }
 
+    public static DoubleStringListManager getDoubleStringListManager(List<String> listeA, List<String> listeB) {
+        return new DoubleStringListManager() {{
+            setListeManagerA(listeA);
+            setListeManagerB(listeB);
+        }};
+    }
+
+    public static DoubleFilesManager getDoubleFilesManager(String directory, String fileName1, String fileName2) {
+        return new DoubleFilesManager(directory, fileName1, fileName2);
+    }
 
 }

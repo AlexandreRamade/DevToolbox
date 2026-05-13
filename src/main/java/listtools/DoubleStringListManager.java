@@ -1,5 +1,7 @@
 package listtools;
 
+import java.util.List;
+
 public class DoubleStringListManager {
 
     private StringListManager managerListeA;
@@ -15,6 +17,16 @@ public class DoubleStringListManager {
 
     public StringListManager setManagerB(StringListManager stringListManager) {
         this.managerListeB = stringListManager;
+        return this.managerListeB;
+    }
+
+    public StringListManager setListeManagerA(List<String> listeA) {
+        this.managerListeA = new StringListManager(listeA);
+        return this.managerListeA;
+    }
+
+    public StringListManager setListeManagerB(List<String> listeB) {
+        this.managerListeB = new StringListManager(listeB);
         return this.managerListeB;
     }
 

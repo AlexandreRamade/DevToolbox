@@ -1,7 +1,5 @@
 package listtools;
 
-import filesmanager.FileContentManager;
-import filesmanager.FilesReader;
 import filesmanager.FilesWriter;
 
 import java.util.ArrayList;
@@ -202,6 +200,7 @@ public class CsvContentManager extends StringListManager {
     }
 
     public List<String> getListe() {
+        toList();
         List<String> listToSave = new ArrayList<>();
         listToSave.add(columnsToCompare.stream().collect(Collectors.joining(SEPARATOR)));
         listToSave.addAll(super.getListe());

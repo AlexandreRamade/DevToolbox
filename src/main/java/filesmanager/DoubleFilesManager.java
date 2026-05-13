@@ -1,21 +1,55 @@
 package filesmanager;
 
+import listtools.ComparatorListManager;
 import listtools.DoubleStringListManager;
-import listtools.StringListManager;
+import listtools.MixerListManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DoubleFilesManager extends DoubleStringListManager {
     private String directory;
+    private FileContentManager fileContentManagerA;
+    private FileContentManager fileContentManagerB;
 
     public DoubleFilesManager(String directory, String fileName1, String fileName2) {
         this.directory = directory;
-        this.setManagerA(new StringListManager(FilesReader.readAllLinesInFile(directory, fileName1)));
-        this.setManagerB(new StringListManager(FilesReader.readAllLinesInFile(directory, fileName2)));
+        this.fileContentManagerA = new FileContentManager(directory, fileName1);
+        this.fileContentManagerB = new FileContentManager(directory, fileName2);
     }
 
     public void changeDirectory(String directory) {
         this.directory = directory;
+    }
+
+    public DoubleFilesManager csvFiles() {
+        return csvFiles(new ArrayList<>());
+    }
+
+    public DoubleFilesManager csvFiles(String... columnTitles) {
+        return csvFiles(Arrays.asList(columnTitles));
+    }
+
+    public DoubleFilesManager csvFiles(List<String> columnsToCompare) {
+        fileContentManagerA.csvFiles(columnsToCompare);
+        fileContentManagerB.csvFiles(columnsToCompare);
+        return this;
+    }
+
+    public ComparatorListManager compare() {
+        attribuerManagers();
+        return super.compare();
+    }
+
+    public MixerListManager mix() {
+        attribuerManagers();
+        return super.mix();
+    }
+
+    private void attribuerManagers() {
+        setManagerA(fileContentManagerA.isCsv() ? fileContentManagerA.getCsvContentManager() : fileContentManagerA);
+        setManagerB(fileContentManagerB.isCsv() ? fileContentManagerB.getCsvContentManager() : fileContentManagerB);
     }
 
     /**

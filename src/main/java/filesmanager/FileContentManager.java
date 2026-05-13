@@ -29,11 +29,7 @@ public class FileContentManager extends StringListManager {
      * @return FileContentManager
      */
     public FileContentManager saveResultInFile(String fileName) {
-        if(csvContentManager != null) {
-            FilesWriter.writeFile(directory, fileName, csvContentManager.getListe(), FilesWriter.OVERWRITE_EXISTING_CONTENT);
-            return this;
-        }
-        FilesWriter.writeFile(directory, fileName, getListe(), FilesWriter.OVERWRITE_EXISTING_CONTENT);
+        FilesWriter.writeFile(directory, fileName, this.getListe(), FilesWriter.OVERWRITE_EXISTING_CONTENT);
         return this;
     }
 
@@ -55,4 +51,18 @@ public class FileContentManager extends StringListManager {
         return csvContentManager;
     }
 
+    public List<String> getListe() {
+        if(isCsv()) {
+            return csvContentManager.getListe();
+        }
+        return super.getListe();
+    }
+
+    public boolean isCsv() {
+        return csvContentManager != null;
+    }
+
+    public CsvContentManager getCsvContentManager() {
+        return csvContentManager;
+    }
 }
