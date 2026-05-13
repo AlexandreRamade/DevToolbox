@@ -91,17 +91,12 @@ public class StringListManager {
         return this;
     }
 
-    public StringListManager substringStartTo(int end) {
-    	liste = liste.map(str -> str.substring(0, end));
-        return this;
-    }
-
-    public StringListManager substringFromToEnd(int start) {
+    public StringListManager substring(int start) {
     	liste = liste.map(str -> str.substring(start));
         return this;
     }
 
-    public StringListManager substrings(int start, int end) {
+    public StringListManager substring(int start, int end) {
     	liste = liste.map(str -> str.substring(start, end));
         return this;
     }
@@ -440,11 +435,6 @@ public class StringListManager {
         return this;
     }
 
-    public StringListManager tronquerLaListe(int tailleListe) {
-        liste = liste.limit(tailleListe);
-        return this;
-    }
-
     public StringListManager dupliquerChaqueElement(int nbCopie) {
         liste = liste.flatMap(str -> IntStream.range(0, nbCopie).mapToObj(i -> str));
         return this;
@@ -467,6 +457,25 @@ public class StringListManager {
 
         int nbCopie = (int) Math.ceil((double) tailleListe / listeSize);
         liste = IntStream.range(0, nbCopie).boxed().flatMap(i -> listeOriginale.stream()).limit(tailleListe);
+        return this;
+    }
+
+    public StringListManager subList(int start, int end) {
+        liste = liste.skip(start).limit(end - start);
+        return this;
+    }
+
+    public StringListManager subList(int start) {
+        liste = liste.skip(start);
+        return this;
+    }
+
+    public StringListManager ajouterBomUTF8CharacterOnFirstLine() {
+        List<String> listeOriginale = liste.collect(Collectors.toList());
+        if (!listeOriginale.isEmpty()) {
+            listeOriginale.set(0, "\uFEFF" + listeOriginale.get(0));
+        }
+        liste = listeOriginale.stream();
         return this;
     }
 
